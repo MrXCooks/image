@@ -1,0 +1,533 @@
+body {
+    background-image: url(https://image2url.com/r2/default/images/1772490884313-2e9b01fc-be6b-4591-82ff-127c88a834a9.jpg);
+    background-size: cover;
+    background-color: #333;
+    margin: 0;
+    font-family: sans-serif;
+    overflow: hidden;
+    display: flex;
+}
+
+/* center cake and message */
+#cake-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10; /* make sure cake is above background tiles */
+}
+
+/* scattered background tiles container */
+#bg-pattern {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.bg-blob {
+    position: absolute;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    opacity: 0.22;
+    transform-origin: center;
+    will-change: transform, opacity;
+    filter: saturate(0.9) contrast(0.95);
+}
+
+/* cake base */
+#cake {
+    position: relative;
+    width: 250px;
+    height: 200px;
+    margin: 0 auto;
+}
+
+/* plate under cake */
+#cake .plate {
+    width: 270px;
+    height: 110px;
+    position: absolute;
+    bottom: -10px;
+    left: -10px;
+    background-color: #ccc;
+    border-radius: 50%;
+    box-shadow:
+        0 2px 0 #b3b3b3,
+        0 4px 0 #999,
+        0 5px 40px rgba(0,0,0,0.5);
+}
+
+/* cake layers (raspberry colored) */
+#cake .layer {
+    position: absolute;
+    width: 250px;
+    height: 100px;
+    border-radius: 50%;
+    background: #C72C48; /* raspberry red */
+    box-shadow:
+        0 2px 0 #a1223a,
+        0 4px 0 #7e1a2e;
+}
+
+#cake .layer-top { top: 0; }
+#cake .layer-middle { top: 33px; }
+#cake .layer-bottom { top: 66px; }
+
+/* icing overlay (cream tinted pink) */
+#cake .icing {
+    position: absolute;
+    top: 2px;
+    left: 5px;
+    background-color: #FFD1DC; /* pale pink */
+    width: 240px;
+    height: 90px;
+    border-radius: 50%;
+}
+
+#cake .icing:before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    right: 5px;
+    bottom: 6px;
+    left: 5px;
+    background-color: #fbf2d2;
+    box-shadow:
+        0 0 4px #fbf2d2,
+        0 0 4px #fbf2d2,
+            0 0 4px #fbf2d2;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+/* drips */
+#cake .drip {
+    display: block;
+    width: 50px;
+    height: 60px;
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+    background-color: #f3e5ab;
+    position: absolute;
+}
+
+#cake .drip1 {
+    top: 53px;
+    left: 5px;
+    transform: skewY(15deg);
+    height: 48px;
+    width: 40px;
+}
+
+#cake .drip2 {
+    top: 69px;
+    left: 181px;
+    transform: skewY(-15deg);
+}
+
+#cake .drip3 {
+    top: 54px;
+    left: 90px;
+    width: 80px;
+    border-bottom-left-radius: 40px;
+    border-bottom-right-radius: 40px;
+}
+
+/* candles (added via JS) */
+.candle {
+    background-color: #7B020B;
+    width: 16px;
+    height: 50px;
+    border-radius: 8px / 4px;
+    /* anchor candle near top edge of cake; moved slightly lower */
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    position: absolute;
+}
+
+.candle:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #901014;
+}
+
+/* hide flame when blown */
+.candle.blown .flame { display: none; }
+
+/* subtle flame representation if used */
+.flame {
+    position: absolute;
+    background-color: orange;
+    width: 15px;
+    height: 35px;
+    border-radius: 10px 10px 10px 10px / 25px 25px 10px 10px;
+    top: -34px;
+    left: 50%;
+    margin-left: -7.5px;
+    z-index: 10;
+    box-shadow:
+        0 0 10px rgba(255,165,0,0.5),
+        0 0 20px rgba(255,165,0,0.5),
+        0 0 60px rgba(255,165,0,0.5),
+        0 0 80px rgba(255,165,0,0.5);
+    transform-origin: 50% 90%;
+    animation: flicker 1s ease-in-out alternate infinite;
+}
+
+@keyframes flicker {
+    0% { transform: skewX(5deg); box-shadow: 0 0 10px rgba(255,165,0,0.2),0 0 20px rgba(255,165,0,0.2),0 0 60px rgba(255,165,0,0.2),0 0 80px rgba(255,165,0,0.2) }
+    25% { transform: skewX(-5deg); box-shadow: 0 0 10px rgba(255,165,0,0.5),0 0 20px rgba(255,165,0,0.5),0 0 60px rgba(255,165,0,0.5),0 0 80px rgba(255,165,0,0.5) }
+    50% { transform: skewX(10deg); box-shadow: 0 0 10px rgba(255,165,0,0.3),0 0 20px rgba(255,165,0,0.3),0 0 60px rgba(255,165,0,0.3),0 0 80px rgba(255,165,0,0.3) }
+    75% { transform: skewX(-10deg); box-shadow: 0 0 10px rgba(255,165,0,0.4),0 0 20px rgba(255,165,0,0.4),0 0 60px rgba(255,165,0,0.4),0 0 80px rgba(255,165,0,0.4) }
+    100% { transform: skewX(5deg); box-shadow: 0 0 10px rgba(255,165,0,0.5),0 0 20px rgba(255,165,0,0.5),0 0 60px rgba(255,165,0,0.5),0 0 80px rgba(255,165,0,0.5) }
+}
+
+#message {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    color: #fff;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+/* card styles */
+#card-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transform: perspective(2500px) rotateY(0deg);
+    display: flex;
+    align-items: center;
+    transition: 1s;
+    justify-content: center;
+    background: rgba(0,0,0,0.5);
+    transition: transform 0.8s ease, opacity 0.8s ease;
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+/* container for dynamically-created balloons */
+#balloon-wrapper {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 25; /* above envelope so balloons float over everything */
+    overflow: hidden;
+}
+
+#card-container.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+#letter-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+/* Envelope styles */
+.envelope {
+    position: relative;
+    width: 350px;
+    height: 280px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.envelope:hover {
+    transform: scale(1.05);
+}
+
+.envelope-body {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #fff9e6 0%, #fff 100%);
+    border: 3px solid #d4a574;
+    border-radius: 5px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    z-index: 1;
+}
+
+.envelope-body::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #d4a574, transparent);
+    top: 50%;
+    left: 0;
+    z-index: 2;
+}
+
+.envelope-flap {
+    position: absolute;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(135deg, #f5e6d3 0%, #e8d4b8 100%);
+    border: 3px solid #d4a574;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0;
+    top: 0;
+    left: 0;
+    transform-origin: top;
+    transition: all 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 3;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.envelope-flap::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 175px solid transparent;
+    border-right: 0px solid transparent;
+    border-top: 60px solid #e8d4b8;
+    left: 0;
+    top: 0;
+    opacity: 0.5;
+}
+
+.envelope.opened .envelope-flap {
+    transform: rotateX(180deg) translateY(-5px);
+    z-index: 0;
+}
+
+/* Message card inside envelope */
+#card {
+    transform: perspective(2500px) rotate(5deg);
+    width: 80%;
+    max-width: 600px;
+    padding: 40px;
+    background: linear-gradient(135deg, #ffeedd 0%, #fff);
+    border: 5px dashed #f39c12;
+    border-radius: 20px;
+    box-shadow: inset 100px 20px 100px rgba(0,0,0,0.2), 0 10px 100px rgba(0,0,0,0.5);
+    position: absolute;
+    text-align: center;
+    animation: slideUp 0.7s ease-out;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    z-index: 15;
+}
+
+#card.hidden {
+    display: none;
+    opacity: 0;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) rotateX(20deg);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) rotateX(0);
+    }
+}
+.birthdaycard:hover .cardFront {
+    transform: rotateY(-160deg);
+    }
+    .birthdaycard:hover .happy {
+        visibility: hidden;
+        }
+
+.cardFront {
+    position: relative;
+    background-color: #fff;
+    width: 250px;
+    height: 350px;
+    overflow: hidden;
+    transform-origin: left;
+    box-shadow: inset 100px 20px 100px rgba(0,0,0,0.2), 30px 0 50px rgba(0,0,0,0.4);
+    transition: 0.6s;
+    z-index: -5;
+    /* hide by default so white rectangle never shows initially */
+    display: none;
+    }
+
+.cardFront.hidden-front {
+    display: none;
+    }
+.happy {
+    font-family: "Lucida Handwriting", cursive;
+    text-align: center;
+    margin: 30px;
+    font-size: 22px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    color: #e74c3c;
+    font-weight: bold;
+    }
+
+.ballons, .ballons-1, .ballons-2, .ballons-3, .ballons-4 {
+    position: absolute;
+    width: 85px;
+    height: 95px;
+    border-radius: 50%;
+}
+
+/* (static balloon rules are no longer needed; dynamic balloons will use the .balloon class) */
+
+/* generic balloon appearance */
+.balloon {
+    position: absolute;
+    width: 85px;
+    height: 95px;
+    border-radius: 50%;
+    /* initial off-screen; JS will position them */
+}
+
+/* optional string decoration for each balloon */
+.balloon::before {
+    content: "";
+    position: absolute;
+    top: 95px;
+    left: 43px;
+    width: 1px;
+    height: 155px;
+    background-color: #f39c12;
+}
+.balloon::after {
+    content: "";
+    position: absolute;
+    top: 94px;
+    left: 37px;
+    background-color: #f39c12;
+    border-right: 7px solid transparent;
+    border-left: 7px solid transparent;
+    border-bottom: 10px solid var(--string-color, #7B020B); /* default color or override */
+}
+
+/* flying balloons animation (reuse existing keyframes) */
+.balloon.fly-up {
+    animation: flyUp 2s ease-in forwards;
+}
+.ballons-1:before, .ballons-2:before, .ballons-3:before, .ballons-4:before {
+    content: "";
+    position: absolute;
+    top: 95px;
+    left: 43px;
+    width: 1px;
+    height: 155px;
+    background-color: #f39c12;
+}
+.ballons-1::after, .ballons-2::after, .ballons-3::after, .ballons-4::after {
+    content: "";
+    position: absolute;
+    top: 94px;
+    left: 37px;
+    background-color: #f39c12;
+    border-right: 7px solid transparent;
+    border-left: 7px solid transparent;
+    }
+.ballons-1::after {
+    border-bottom: 10px solid #7B020B;
+}
+.ballons-2::after {
+    border-bottom: 10px solid #04b;
+}
+.ballons-3::after {
+    border-bottom: 10px solid #ffc94c;
+}
+.ballons-4::after {
+    border-bottom: 10px solid #0c0;
+}
+
+/* Flying balloons animation */
+@keyframes flyUp {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-150vh) scale(0.3);
+        opacity: 0;
+    }
+}
+
+.ballons.fly-up, .ballons-1.fly-up, .ballons-2.fly-up, .ballons-3.fly-up, .ballons-4.fly-up {
+    animation: flyUp 2s ease-in forwards;
+}
+.cardInside {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 350px;
+    z-index: -1;
+    background-color: #fff;
+    box-shadow: inset 100px 20px 100px rgba(0,0,0,0.2);
+}
+p {
+    font-family: "Lucida Handwriting", cursive;
+    color: #333;
+    margin: 20px 0 0;
+}
+.back {
+    font-family: "Lucida Handwriting", cursive;
+    text-align: center;
+    margin: 30px;
+    font-size: 22px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    color: #e74c3c;
+    font-weight: bold;
+}
+.homebutton {
+    display: inline-block;
+    background-color: aqua;
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1em;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+.homebutton:hover {
+    background-color: #00bcd4;
+    }
+
+    
+
+#card h1 { margin-top: 0; }
+#user-message { font-size: 1.1rem; margin-top: 20px; }
+
+/* confetti */
+#confetti-canvas {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    pointer-events:none;
+}

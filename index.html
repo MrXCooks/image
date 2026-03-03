@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="chrome" />
+    <title>Happy Birthday</title>
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div id="bg-pattern" aria-hidden="true"></div>
+    <div id="cake-container">
+        <div id="cake">
+            <div class="plate"></div>
+            <div class="layer layer-top"></div>
+            <div class="layer layer-middle"></div>
+            <div class="layer layer-bottom"></div>
+            <div class="icing"></div>
+            <div class="drip drip1"></div>
+            <div class="drip drip2"></div>
+            <div class="drip drip3"></div>
+            <!-- candles will be inserted by JS -->
+        </div>
+        <div id="message">Blow on the candles!</div>
+    </div>
+
+    <div id="card-container">
+            <div class="birthday card">
+        <div class="cardFront"></div>
+        <div id="balloon-wrapper"></div>
+        <div id="letter-container">
+            <div class="envelope" id="envelope">
+                <div class="envelope-body"></div>
+                <div class="envelope-flap"></div>
+            </div>
+            <div id="card" class="hidden">
+                <h1>Happy Birthday, Ryadh!</h1>
+                <p id="user-message">I hope this year brings you endless happiness, success, and unforgettable memories. You're not just a friend, you're someone I truly appreciate and admire. Thank you for always being there, for the laughs, the advice, and the good vibes you bring into my life. May this new chapter be filled with new opportunities, exciting adventures, and everything you've been wishing for. Keep chasing your goals and never stop being the amazing person you are. I'm grateful for our friendship and can't wait to celebrate many more birthdays together. Enjoy your special day!</p>
+                <p class="name">Ryadh</p>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- include confetti library from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+    // generate scattered background tiles (small, rotated copies of the background image)
+    function generateBgTiles(count) {
+        const container = document.getElementById('bg-pattern');
+        const imgUrl = 'https://image2url.com/r2/default/images/1772490884313-2e9b01fc-be6b-4591-82ff-127c88a834a9.jpg';
+        // clear any existing
+        container.innerHTML = '';
+        for (let i = 0; i < count; i++) {
+            const d = document.createElement('div');
+            d.className = 'bg-blob';
+            const size = Math.floor(80 + Math.random() * 220); // px
+            const left = Math.random() * 100; // percent
+            const top = Math.random() * 100; // percent
+            const rot = Math.floor(Math.random() * 360);
+            const opacity = 0.12 + Math.random() * 0.25;
+            d.style.width = size + 'px';
+            d.style.height = size + 'px';
+            d.style.left = left + 'vw';
+            d.style.top = top + 'vh';
+            d.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
+            d.style.backgroundImage = `url(${imgUrl})`;
+            d.style.opacity = opacity;
+            d.style.zIndex = 0;
+            container.appendChild(d);
+        }
+    }
+
+    // utility to create candles
+    function createCandles(n) {
+        const cake = document.getElementById('cake');
+        for (let i = 0; i < n; i++) {
+            const candle = document.createElement('div');
+            candle.className = 'candle';
+            // distribute evenly across cake width using percentage
+            candle.style.left = ((i + 1) * (100 / (n + 1))) + '%';
+            // add a flame element inside the candle so CSS can animate it
+            const flame = document.createElement('div');
+            flame.className = 'flame';
+            candle.appendChild(flame);
+
+            cake.appendChild(candle);
+        }
+    }
+
+    // I CAN HEAR YOUUUUUU!
+    function startListening(callback) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.warn('getUserMedia not supported, falling back to click');
+            return;
+        }
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioCtx.createMediaStreamSource(stream);
+            const analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 2048;
+            source.connect(analyser);
+            const data = new Uint8Array(analyser.fftSize);
+            let listening = true;
+            function checkLevel() {
+                if (!listening) return;
+                analyser.getByteTimeDomainData(data);
+                let sum = 0;
+                for (let i = 0; i < data.length; i++) {
+                    const val = (data[i] - 128) / 128;
+                    sum += val * val;
+                }
+                const rms = Math.sqrt(sum / data.length);
+                if (rms > 0.1) { 
+                    listening = false;
+                    callback();
+                    stream.getTracks().forEach(t => t.stop());
+                } else {
+                    requestAnimationFrame(checkLevel);
+                }
+            }
+            checkLevel();
+        }).catch(err => {
+            console.error('microphone access denied', err);
+        });
+    }
+
+    function blowOut() {
+        // remove flames
+        document.querySelectorAll('.candle').forEach(c => c.classList.add('blown'));
+        // after short delay slide to card
+        setTimeout(() => {
+            document.getElementById('cake-container').style.display = 'none';
+            document.getElementById('card-container').classList.add('show');
+            launchConfetti();
+        }, 500);
+    }
+
+    function openLetter() {
+        const envelope = document.getElementById('envelope');
+        const card = document.getElementById('card');
+        const cardFront = document.querySelector('.cardFront');
+        const wrapper = document.getElementById('balloon-wrapper');
+
+        // Hide the white card front
+        if (cardFront) {
+            cardFront.classList.add('hidden-front');
+        }
+
+        // create lots of balloons and animate them
+        createBalloons(wrapper, 60);
+        wrapper.querySelectorAll('.balloon').forEach(b => b.classList.add('fly-up'));
+
+        envelope.classList.add('opened');
+        setTimeout(() => {
+            card.classList.remove('hidden');
+        }, 600);
+    }
+
+    // generate balloon elements inside container
+    function createBalloons(container, count) {
+        if (!container) return;
+        container.innerHTML = '';
+        for (let i = 0; i < count; i++) {
+            const b = document.createElement('div');
+            b.className = 'balloon';
+            // random position near bottom
+            b.style.left = (10 + Math.random() * 80) + 'vw';
+            b.style.top = (60 + Math.random() * 30) + 'vh';
+            b.style.backgroundColor = randomColor();
+            container.appendChild(b);
+        }
+    }
+
+    // pastel color generator
+    function randomColor() {
+        const h = Math.floor(Math.random() * 360);
+        const s = 70 + Math.random() * 20;
+        const l = 70 + Math.random() * 10;
+        return `hsl(${h},${s}%,${l}%)`;
+    }
+
+    function launchConfetti() {
+        const myConfetti = confetti.create(document.getElementById('confetti-canvas'), { resize: true });
+        // several bursts
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                myConfetti({ particleCount: 200, spread: 70, origin: { y: 0.4 } });
+            }, i * 300);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // create decorative background tiles behind the cake
+        generateBgTiles(28);
+
+        createCandles(5);
+        // allow click as fallback
+        document.getElementById('cake').addEventListener('click', blowOut);
+        startListening(blowOut);
+
+        // handle envelope opening
+        const envelope = document.getElementById('envelope');
+        envelope.addEventListener('click', openLetter);
+    });
+    </script>
+</body>
+</html>
